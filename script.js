@@ -1,4 +1,3 @@
-```javascript
 // ========================================
 // BASIC MATH FUNCTIONS
 // ========================================
@@ -27,11 +26,17 @@ function divide(a, b) {
 function operate(operator, a, b) {
     if (operator === "+") {
         return add(a, b);
-    } else if (operator === "-") {
+    }
+
+    if (operator === "-") {
         return subtract(a, b);
-    } else if (operator === "*") {
+    }
+
+    if (operator === "*") {
         return multiply(a, b);
-    } else if (operator === "/") {
+    }
+
+    if (operator === "/") {
         return divide(a, b);
     }
 }
@@ -45,6 +50,7 @@ let firstNumber = "";
 let operator = "";
 let secondNumber = "";
 
+let waitingForSecondNumber = false;
 let shouldResetDisplay = false;
 
 
@@ -80,7 +86,7 @@ numberButtons.forEach(function(button) {
 
     button.addEventListener("click", function() {
 
-        // If a result was already displayed,
+        // If we just got a result,
         // start a completely new calculation.
         if (shouldResetDisplay) {
             display.textContent = "0";
@@ -93,7 +99,15 @@ numberButtons.forEach(function(button) {
         }
 
 
-        // Replace the initial 0
+        // If an operator was just pressed,
+        // start entering the second number.
+        if (waitingForSecondNumber) {
+            display.textContent = "0";
+            waitingForSecondNumber = false;
+        }
+
+
+        // Replace the initial 0.
         if (display.textContent === "0") {
             display.textContent = button.textContent;
         } else {
@@ -101,7 +115,7 @@ numberButtons.forEach(function(button) {
         }
 
 
-        // Store the number
+        // Store the number.
         if (operator === "") {
             firstNumber = display.textContent;
         } else {
@@ -121,22 +135,31 @@ operatorButtons.forEach(function(button) {
 
     button.addEventListener("click", function() {
 
-        // Convert the calculator symbols
-        // into JavaScript operators.
+        // Convert calculator symbols to
+        // JavaScript operators.
         let selectedOperator = button.textContent;
 
         if (selectedOperator === "÷") {
             selectedOperator = "/";
-        } else if (selectedOperator === "×") {
+        }
+
+        if (selectedOperator === "×") {
             selectedOperator = "*";
-        } else if (selectedOperator === "−") {
+        }
+
+        if (selectedOperator === "−") {
             selectedOperator = "-";
         }
 
 
-        // If we already have two numbers,
-        // calculate them first.
-        if (firstNumber !== "" && secondNumber !== "") {
+        // If we already have:
+        // first number + operator + second number
+        // calculate before using the new operator.
+        if (
+            firstNumber !== "" &&
+            operator !== "" &&
+            secondNumber !== ""
+        ) {
 
             let result = operate(
                 operator,
@@ -145,7 +168,7 @@ operatorButtons.forEach(function(button) {
             );
 
 
-            // Prevent division by zero
+            // Division by zero.
             if (!Number.isFinite(result)) {
 
                 display.textContent = "Nice try 😏";
@@ -155,6 +178,7 @@ operatorButtons.forEach(function(button) {
                 secondNumber = "";
 
                 shouldResetDisplay = true;
+                waitingForSecondNumber = false;
 
                 return;
             }
@@ -164,26 +188,18 @@ operatorButtons.forEach(function(button) {
 
             display.textContent = result;
 
-            firstNumber = result;
+            firstNumber = String(result);
             secondNumber = "";
         }
 
 
-        // Store the selected operator.
-        // This also means pressing another operator
-        // replaces the previous operator.
-        if (firstNumber !== "") {
-            operator = selectedOperator;
-        }
+        // If the user presses another operator
+        // without entering a second number,
+        // simply replace the old operator.
+        operator = selectedOperator;
 
-
-        // The next number should replace
-        // the current display.
+        waitingForSecondNumber = true;
         shouldResetDisplay = false;
-
-        // Clear the display so the second number
-        // can be entered.
-        display.textContent = "0";
 
     });
 
@@ -196,8 +212,8 @@ operatorButtons.forEach(function(button) {
 
 equalsButton.addEventListener("click", function() {
 
-    // Do nothing if we don't have:
-    // first number + operator + second number
+    // Don't calculate if we don't have
+    // all three required parts.
     if (
         firstNumber === "" ||
         operator === "" ||
@@ -214,7 +230,7 @@ equalsButton.addEventListener("click", function() {
     );
 
 
-    // Division by zero
+    // Division by zero.
     if (!Number.isFinite(result)) {
 
         display.textContent = "Nice try 😏";
@@ -224,6 +240,7 @@ equalsButton.addEventListener("click", function() {
         secondNumber = "";
 
         shouldResetDisplay = true;
+        waitingForSecondNumber = false;
 
         return;
     }
@@ -234,14 +251,14 @@ equalsButton.addEventListener("click", function() {
     display.textContent = result;
 
 
-    // The result becomes the first number
-    // for a possible next calculation.
-    firstNumber = result;
+    // The result becomes the first number.
+    firstNumber = String(result);
 
     operator = "";
     secondNumber = "";
 
     shouldResetDisplay = true;
+    waitingForSecondNumber = false;
 
 });
 
@@ -258,6 +275,7 @@ clearButton.addEventListener("click", function() {
 
     display.textContent = "0";
 
+    waitingForSecondNumber = false;
     shouldResetDisplay = false;
 
 });
@@ -269,6 +287,7 @@ clearButton.addEventListener("click", function() {
 
 decimalButton.addEventListener("click", function() {
 
+    // After a result, start fresh.
     if (shouldResetDisplay) {
 
         display.textContent = "0";
@@ -281,7 +300,17 @@ decimalButton.addEventListener("click", function() {
     }
 
 
-    // Don't allow more than one decimal point
+    // If an operator was just pressed,
+    // start the second number with 0.
+    if (waitingForSecondNumber) {
+
+        display.textContent = "0";
+
+        waitingForSecondNumber = false;
+    }
+
+
+    // Only allow one decimal point.
     if (!display.textContent.includes(".")) {
 
         display.textContent += ".";
@@ -304,7 +333,8 @@ decimalButton.addEventListener("click", function() {
 
 backspaceButton.addEventListener("click", function() {
 
-    if (shouldResetDisplay) {
+    // Don't change the result.
+    if (shouldResetDisplay || waitingForSecondNumber) {
         return;
     }
 
@@ -321,6 +351,7 @@ backspaceButton.addEventListener("click", function() {
     }
 
 
+    // Update stored number.
     if (operator === "") {
         firstNumber = display.textContent;
     } else {
@@ -328,4 +359,3 @@ backspaceButton.addEventListener("click", function() {
     }
 
 });
-```
