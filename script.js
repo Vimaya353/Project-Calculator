@@ -1,3 +1,4 @@
+```javascript
 // ========================================
 // BASIC MATH FUNCTIONS
 // ========================================
@@ -37,7 +38,7 @@ function operate(operator, a, b) {
 
 
 // ========================================
-// CALCULATOR VARIABLES
+// CALCULATOR STATE
 // ========================================
 
 let firstNumber = "";
@@ -48,7 +49,7 @@ let shouldResetDisplay = false;
 
 
 // ========================================
-// HTML ELEMENTS
+// GET HTML ELEMENTS
 // ========================================
 
 const display = document.querySelector(".display");
@@ -63,7 +64,7 @@ const backspaceButton = document.querySelector(".backspace");
 
 
 // ========================================
-// ROUND LONG DECIMAL RESULTS
+// ROUND RESULTS
 // ========================================
 
 function roundResult(number) {
@@ -79,21 +80,28 @@ numberButtons.forEach(function(button) {
 
     button.addEventListener("click", function() {
 
+        // If a result was already displayed,
+        // start a completely new calculation.
         if (shouldResetDisplay) {
-            display.textContent = "";
-            shouldResetDisplay = false;
+            display.textContent = "0";
 
             firstNumber = "";
             operator = "";
             secondNumber = "";
+
+            shouldResetDisplay = false;
         }
 
+
+        // Replace the initial 0
         if (display.textContent === "0") {
             display.textContent = button.textContent;
         } else {
             display.textContent += button.textContent;
         }
 
+
+        // Store the number
         if (operator === "") {
             firstNumber = display.textContent;
         } else {
@@ -113,9 +121,10 @@ operatorButtons.forEach(function(button) {
 
     button.addEventListener("click", function() {
 
+        // Convert the calculator symbols
+        // into JavaScript operators.
         let selectedOperator = button.textContent;
 
-        // Convert calculator symbols to JavaScript operators
         if (selectedOperator === "÷") {
             selectedOperator = "/";
         } else if (selectedOperator === "×") {
@@ -125,8 +134,8 @@ operatorButtons.forEach(function(button) {
         }
 
 
-        // If there is already a complete operation,
-        // calculate it first.
+        // If we already have two numbers,
+        // calculate them first.
         if (firstNumber !== "" && secondNumber !== "") {
 
             let result = operate(
@@ -135,7 +144,10 @@ operatorButtons.forEach(function(button) {
                 Number(secondNumber)
             );
 
+
+            // Prevent division by zero
             if (!Number.isFinite(result)) {
+
                 display.textContent = "Nice try 😏";
 
                 firstNumber = "";
@@ -147,6 +159,7 @@ operatorButtons.forEach(function(button) {
                 return;
             }
 
+
             result = roundResult(result);
 
             display.textContent = result;
@@ -156,11 +169,21 @@ operatorButtons.forEach(function(button) {
         }
 
 
-        // Store the selected operator
+        // Store the selected operator.
+        // This also means pressing another operator
+        // replaces the previous operator.
         if (firstNumber !== "") {
             operator = selectedOperator;
-            shouldResetDisplay = false;
         }
+
+
+        // The next number should replace
+        // the current display.
+        shouldResetDisplay = false;
+
+        // Clear the display so the second number
+        // can be entered.
+        display.textContent = "0";
 
     });
 
@@ -173,8 +196,8 @@ operatorButtons.forEach(function(button) {
 
 equalsButton.addEventListener("click", function() {
 
-    // Don't calculate unless we have
-    // two numbers and an operator.
+    // Do nothing if we don't have:
+    // first number + operator + second number
     if (
         firstNumber === "" ||
         operator === "" ||
@@ -191,7 +214,7 @@ equalsButton.addEventListener("click", function() {
     );
 
 
-    // Divide-by-zero protection
+    // Division by zero
     if (!Number.isFinite(result)) {
 
         display.textContent = "Nice try 😏";
@@ -206,15 +229,13 @@ equalsButton.addEventListener("click", function() {
     }
 
 
-    // Round long decimal answers
     result = roundResult(result);
 
-
-    // Show result
     display.textContent = result;
 
 
-    // Store result for the next operation
+    // The result becomes the first number
+    // for a possible next calculation.
     firstNumber = result;
 
     operator = "";
@@ -252,11 +273,11 @@ decimalButton.addEventListener("click", function() {
 
         display.textContent = "0";
 
-        shouldResetDisplay = false;
-
         firstNumber = "";
         operator = "";
         secondNumber = "";
+
+        shouldResetDisplay = false;
     }
 
 
@@ -307,3 +328,4 @@ backspaceButton.addEventListener("click", function() {
     }
 
 });
+```
